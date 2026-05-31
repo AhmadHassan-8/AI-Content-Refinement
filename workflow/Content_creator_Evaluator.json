@@ -1,0 +1,596 @@
+{
+  "name": "Content_creator_Evaluator",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -4512,
+        48
+      ],
+      "id": "5c5d2c50-af1d-45d0-b7d9-bf5e1dadbd20",
+      "name": "When chat message received",
+      "webhookId": "8d3e2b8a-4ef3-446e-9f92-39c173afc523"
+    },
+    {
+      "parameters": {
+        "sendTo": "ahmad.hassan666888@gmail.com",
+        "subject": "after",
+        "emailType": "text",
+        "message": "={{ $json.corrected }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        416,
+        16
+      ],
+      "id": "fe824bd8-e55f-485d-a393-a1a11671dc5e",
+      "name": "Send a message1",
+      "webhookId": "3c74717c-660b-45ee-aed1-14a853ad377d",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "EgTkZFoBQnMtaoPb",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.rawQuery }}{{ $json.sessionId }}{{ $json.generatedPrompt }}{{ $json.loopCounter }}",
+        "options": {
+          "systemMessage": "=You are a professional Content Writer AI.\n\nYou will receive four inputs:\n- `sessionId`: A unique identifier for this writing session ({{ $json.sessionId }})\n- `loopCounter`: A counter representing the current refinement loop ({{ $json.loopCounter }})\n- `generatedPrompt`: A detailed, structured instruction prepared by a Prompt Engineer ({{ $json.generatedPrompt }})\n- `rawQuery`: The original user input, which may contain preferences like tone, style, or word count ({{ $json.rawQuery }})\n\n---\n\n🎯 Your job is to:\n- Strictly follow the instructions in `generatedPrompt` — including tone, voice, structure, and stylistic choices.\n- Use `rawQuery` **only as context** to extract any specific user preferences such as word count, platform, or theme.\n- If a specific word count is mentioned in `rawQuery`, **respect it**.\n- If not, default to **150–200 words**.\n- Write naturally — like a professional human writer, not a machine.\n\n---\n\n⚠️ You must follow these formatting and behavior rules without exception:\n\n❌ Never mention prompts, agents, loops, tools, or that you are AI.  \n❌ Do not use markdown, bullet points, or explain what you're writing.  \n❌ Never skip or rename any field.  \n✅ Always include the full output using this strict format:\n\n**SessionId:** [{{ $json.sessionId }}]  \n**LoopCounter:** [{{ $json.loopCounter }}]  \n**RawQuery:** [{{ $json.rawQuery }}]  \n**Output:** [Your final written content — polished, complete, and ready to publish.]\n\n---\n\n📢 COPYWRITING INSTRUCTIONS:\n- Hook fast. Grab attention in the first line.\n- Use emotional, clear, brand-aligned language.\n- Follow the structure in the prompt exactly.\n- Keep it punchy and benefit-driven — unless a longer format is requested in `rawQuery`.\n\n📖 STORY WRITING INSTRUCTIONS:\n- Begin with a vivid sensory or emotional hook.\n- Show — don’t tell. Use dialogue, tension, and pacing.\n- Follow character tone and structure from the prompt.\n- End with a resolution or reflection — not explanation.\n\n---\n\n⚙️ This format is required for quality control, loop evaluation, and prompt alignment. If you break it, your output will be rejected.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.1,
+      "position": [
+        -2416,
+        32
+      ],
+      "id": "db2cf78f-3c02-4313-bb50-00cb52253824",
+      "name": "content_creater1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.inputString }}{{ $json.sessionId }}{{ $json.loopCounter }}{{ $json.rawQuery }}",
+        "options": {
+          "systemMessage": "=You are a Prompt Engineering AI.  \nYour only task is to generate a clear, structured prompt for a second AI agent that will either write a story or create marketing content — based on a short input such as a theme, idea, product, or goal.\n\nYou will receive:  \n- `inputString`: the full input string including context, either a raw idea or evaluation feedback  \n- `sessionId`: the current session identifier  \n- `loopCounter`: an integer passed from the orchestrator indicating how many improvement loops have occurred  \n- `rawQuery`: the original user request or theme (e.g., “LinkedIn post on AI not replacing humans”)  \n\n⚠️ IMPORTANT RULES:  \n- DO NOT write any content or output for the second agent — only generate the prompt.  \n- DO NOT guess or increment `loopCounter` — always use the exact value passed.  \n- Use `inputString` as the main context.  \n- Use `rawQuery` as the creative seed or objective.  \n- Decide if the task is **story writing** or **copywriting** and structure the prompt accordingly.  \n- If `inputString` includes evaluation feedback, apply improvements accordingly.  \n- Return no extra commentary, no markdown, no headings — only the strict format below.\n\n🧵 Output Format (Strict):  \n**SessionId:** [{{ $json.sessionId }}]  \n**LoopCounter:** [{{ $json.loopCounter }}]  \n**RawQuery:** [{{ $json.rawQuery }}]  \n**Output:** [The full writing prompt here in plain text — no headings or markdown, just human-style instructional prompt]\n\n--- Prompt Structure ---  \nIf it is **Story Writing**, include:  \n- Context  \n- Emotional Focus  \n- Point of View and Tone  \n- Character and Conflict  \n- Hook Strategy  \n- Style and Pacing  \n- ✅ Do’s / ❌ Don’ts  \n\nIf it is **Copywriting**, include:  \n- Context  \n- Objective  \n- Audience  \n- Hook Strategy  \n- Tone and Style  \n- Structure  \n- ✅ Do’s / ❌ Don’ts  \n\n--- Evaluation Learning ---  \nIf feedback is present in `inputString`:  \n- Identify what needs improvement (tone, hook, clarity, specificity).  \n- Do not repeat previously corrected mistakes.  \n- Use Corrected Output as a quality reference.  \n- Adjust your new prompt accordingly.\n\nNever return anything except:  \n**SessionId:** [value]  \n**LoopCounter:** [value]  \n**RawQuery:** [value]  \n**Output:** [Fully structured, single-line writing prompt]\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.1,
+      "position": [
+        -3584,
+        32
+      ],
+      "id": "02001aeb-4890-45ae-9bd5-6e40d97c572e",
+      "name": "prompt_engineer1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get the corrected content from incoming JSON\nlet corrected = items[0].json.corrected || \"\";\n\n// If it's a stringified JSON block with triple backticks, clean it up\nif (typeof corrected === \"string\") {\n  corrected = corrected.trim();\n\n  // Remove surrounding ``` if present\n  if (corrected.startsWith(\"```\") && corrected.endsWith(\"```\")) {\n    corrected = corrected.replace(/^```(?:json)?\\n?/, \"\").replace(/```$/, \"\").trim();\n  }\n\n  // If it still looks like a JSON string, try parsing it and extracting \"Corrected Output\"\n  try {\n    const parsed = JSON.parse(corrected);\n    if (parsed[\"Corrected Output\"]) {\n      corrected = parsed[\"Corrected Output\"];\n    }\n  } catch (e) {\n    // leave as-is if not parsable\n  }\n}\n\nreturn [\n  {\n    json: {\n      corrected\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        64,
+        16
+      ],
+      "id": "1cd18752-867c-409f-8857-d69c09dccef4",
+      "name": "Code6"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -1168,
+        448
+      ],
+      "id": "f7df50e1-4fcc-4613-8fcc-55de5d5dfbe7",
+      "name": "Embeddings Google Gemini",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "70SWxhbVh9HZaCjv",
+          "name": "nauman_gemini2.0"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.0-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -1456,
+        240
+      ],
+      "id": "262962cf-5796-4f59-a470-c874b12d2137",
+      "name": "Google Gemini Chat Model4",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "70SWxhbVh9HZaCjv",
+          "name": "nauman_gemini2.0"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Use this tool RAG_Search to retrieve relevant, high-quality human-written content samples from check namespace. The data includes stories, copywriting pieces, and related hashtags — all written in a natural, human style. These examples are used to evaluate and improve the input content by providing guidance on tone, structure, formatting, and hashtag usage.\n\nAlways retrieve data from the `check` namespace. This namespace contains trusted human-written content specifically prepared for learning and evaluation.\n\n",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "demo",
+          "mode": "list",
+          "cachedResultName": "demo"
+        },
+        "options": {
+          "pineconeNamespace": "check"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        -1184,
+        288
+      ],
+      "id": "9e8683ff-7b16-41c7-b61f-c0807dfd2991",
+      "name": "RAG_Search",
+      "credentials": {
+        "pineconeApi": {
+          "id": "xuV3T9y3Qb9HULP5",
+          "name": "PineconeApi account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const output = $json.output || \"\";\n\n// Extract values from markdown using regex\nconst sessionIdMatch = output.match(/\\*\\*Session ID:\\*\\*\\s*([a-f0-9\\-]+)/i);\nconst loopCounterMatch = output.match(/\\*\\*Loop Counter:\\*\\*\\s*(\\d+)/);\nconst rawQueryMatch = output.match(/\\*\\*RawQuery:\\*\\*\\s*\\[([\\s\\S]*?)\\]/);\nconst scoreMatch = output.match(/\\*\\*Evaluation Score:\\*\\*\\s*(\\d+)\\/10/);\nconst mistakesMatch = output.match(/\\*\\*Mistakes Found:\\*\\*\\s*([\\s\\S]*?)\\*\\*Suggestions:/);\nconst suggestionsMatch = output.match(/\\*\\*Suggestions:\\*\\*\\s*([\\s\\S]*?)\\*\\*Corrected Output:/);\nconst correctedMatch = output.match(/\\*\\*Corrected Output:\\*\\*\\s*([\\s\\S]*)/);\n\n// Parse and prepare values\nconst sessionId = sessionIdMatch ? sessionIdMatch[1].trim() : \"\";\nconst rawQuery = rawQueryMatch ? rawQueryMatch[1].trim() : \"\";\nconst currentLoopCounter = loopCounterMatch ? parseInt(loopCounterMatch[1]) : 0;\nconst incrementedLoopCounter = currentLoopCounter + 1;\nconst score = scoreMatch ? parseInt(scoreMatch[1]) : 0;\n\nconst mistakes = mistakesMatch ? mistakesMatch[1].trim() : \"\";\nconst suggestions = suggestionsMatch ? suggestionsMatch[1].trim() : \"\";\nconst corrected = correctedMatch ? correctedMatch[1].trim() : \"\";\n\nreturn {\n  json: {\n    sessionId,\n    rawQuery,\n    loopCounter: incrementedLoopCounter,\n    score,\n    mistakes,\n    suggestions,\n    corrected\n  }\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -720,
+        32
+      ],
+      "id": "2edaf2f7-9449-4c33-a9e5-9ef4781975c0",
+      "name": "Code7"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "296d3464-d47b-4a4c-afb3-6a266cda651c",
+              "leftValue": "={{ $json.score }}",
+              "rightValue": 9,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            },
+            {
+              "id": "c7361c83-155e-4f56-af8a-f0625c8c180e",
+              "leftValue": "={{ $json.loopCounter }}",
+              "rightValue": 4,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -368,
+        32
+      ],
+      "id": "df7b13bf-65b3-41cb-8323-cdd1affe4dac",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = items[0];\n\n// Extract values safely\nconst sessionId = item.json.sessionId || \"Unknown Session ID\";\nconst loopCounter = item.json.loopCounter ?? \"N/A\"; // Preserve 0\nconst score = item.json.score ?? \"N/A\";\nconst mistakes = item.json.mistakes?.trim() || \"No mistakes found.\";\nconst suggestions = item.json.suggestions?.trim() || \"No suggestions.\";\nconst corrected = item.json.corrected?.trim() || \"No rewritten output provided.\";\nconst rawQuery = item.json.rawQuery || \"Not specified\";\n\n// Final formatted output\nconst final_output = \n`**Session ID:** ${sessionId}  \n**Loop Counter:** ${loopCounter}  \n\n**Evaluation Score:** ${score}/10  \n\n**Mistakes Found:**  \n${mistakes}  \n\n**Suggestions:**  \n${suggestions}  \n\n**Corrected Output:**  \n${corrected}  \n\n**RawQuery:** [${rawQuery}]\n`;\n\nreturn [\n  {\n    json: {\n      sessionId,\n      loopCounter,\n      rawQuery,\n      final_output,\n      chatInput: final_output // For next AI Agent\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        144,
+        416
+      ],
+      "id": "d22d589e-729c-471e-973b-acbb2e370745",
+      "name": "Code8"
+    },
+    {
+      "parameters": {
+        "jsCode": "const sessionId = $json.sessionId || \"\";\nconst rawInput = $json.chatInput || \"\"; // Assuming $json.chatInput is the source of the raw text\n\n// Initialize loopCounter (preserve if already present)\nconst loopCounter = $json.loopCounter ?? 0;\n\nconst scoreMatch = rawInput.match(/\\*\\*Evaluation Score:\\*\\*\\s*(\\d+)\\/10/);\nconst mistakesMatch = rawInput.match(/\\*\\*Mistakes Found:\\*\\*([\\s\\S]*?)\\*\\*Suggestions:\\*\\*/);\nconst suggestionsMatch = rawInput.match(/\\*\\*Suggestions:\\*\\*([\\s\\S]*?)\\*\\*Corrected Output:\\*\\*/);\nconst correctedMatch = rawInput.match(/\\*\\*Corrected Output:\\*\\*([\\s\\S]*)/);\n\nconst isEvaluation = scoreMatch && correctedMatch;\n\n// Build the inputString that combines all relevant data\nlet inputString = '';\n\nif (isEvaluation) {\n    inputString += `--- Evaluation Input ---\\n`;\n    inputString += `Original Request: ${(!isEvaluation && rawInput.trim()) || 'N/A'}\\n`;\n    inputString += `Raw User Input (from evaluation): ${rawInput.trim()}\\n`;\n    inputString += `Is Evaluation: Yes\\n`;\n    inputString += `Evaluation Score: ${scoreMatch ? parseInt(scoreMatch[1]) : 'N/A'}\\n`;\n    inputString += `Mistakes Found: ${mistakesMatch ? mistakesMatch[1].trim() : 'None'}\\n`;\n    inputString += `Suggestions: ${suggestionsMatch ? suggestionsMatch[1].trim() : 'None'}\\n`;\n    inputString += `Corrected Output: ${correctedMatch ? correctedMatch[1].trim() : 'N/A'}\\n`;\n    inputString += `--- End Evaluation Input ---\\n\\n`;\n    inputString += `Based on the evaluation feedback above, please generate the next improved prompt, adhering to the system message instructions.`;\n} else {\n    inputString += `--- New User Input ---\\n`;\n    inputString += `Raw User Input: ${rawInput.trim()}\\n`;\n    inputString += `Is Evaluation: No\\n`;\n    inputString += `--- End New User Input ---\\n\\n`;\n    inputString += `Please generate a prompt based on this input, adhering to the system message instructions.`;\n}\n\nreturn {\n  json: {\n    sessionId: sessionId,\n    loopCounter: loopCounter, // ✅ Pass loop counter forward\n    inputString: inputString,\n    rawQuery: rawInput // ✅ Added original chat trigger input for reuse downstream\n  }\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -4064,
+        32
+      ],
+      "id": "e651619f-6a68-4c2a-9783-9fa8f68c9a9d",
+      "name": "Code9"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.0-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -3568,
+        240
+      ],
+      "id": "c01cd3b4-d7df-4c3b-8b59-1f74ccb146c3",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "70SWxhbVh9HZaCjv",
+          "name": "nauman_gemini2.0"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.0-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -2400,
+        240
+      ],
+      "id": "d269c733-988f-4548-b6b2-fdc3e2752658",
+      "name": "Google Gemini Chat Model5",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "70SWxhbVh9HZaCjv",
+          "name": "nauman_gemini2.0"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "= {{$json.sessionId }}",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -3472,
+        256
+      ],
+      "id": "93b7626d-0f65-4387-9a31-cae3dcda8dbb",
+      "name": "Simple Memory3"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.sessionId }}",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -1312,
+        272
+      ],
+      "id": "93443a32-e2e8-44d9-935d-37854ce613fc",
+      "name": "Simple Memory4"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.sessionId }}",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -2272,
+        272
+      ],
+      "id": "b2a367d7-73e9-4580-a40f-605d0d04c532",
+      "name": "Simple Memory5"
+    },
+    {
+      "parameters": {
+        "jsCode": "const output = $json.output || \"\";\n\n// Match sessionId from pattern: **SessionId:** [value]\nconst sessionIdMatch = output.match(/\\*\\*SessionId:\\*\\*\\s*\\[?([a-f0-9-]+)\\]?/i);\n\n// Match loopCounter from pattern: **LoopCounter:** [number]\nconst loopCounterMatch = output.match(/\\*\\*LoopCounter:\\*\\*\\s*\\[?(\\d+)\\]?/i);\n\n// Match rawQuery from pattern: **RawQuery:** [text]\nconst rawQueryMatch = output.match(/\\*\\*RawQuery:\\*\\*\\s*\\[([\\s\\S]*?)\\]/i);\n\n// Match generated prompt — everything between [ and ] after **Output:**\nconst promptMatch = output.match(/\\*\\*Output:\\*\\*\\s*\\[([\\s\\S]*?)\\](?:\\n|$)/i);\n\nreturn {\n  json: {\n    sessionId: sessionIdMatch ? sessionIdMatch[1].trim() : \"\",\n    loopCounter: loopCounterMatch ? parseInt(loopCounterMatch[1]) : 0,\n    rawQuery: rawQueryMatch ? rawQueryMatch[1].trim() : \"\",\n    generatedPrompt: promptMatch ? promptMatch[1].trim() : \"\"\n  }\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2944,
+        32
+      ],
+      "id": "084af066-43c6-4c63-a6b9-a01d34b43eb0",
+      "name": "Code10"
+    },
+    {
+      "parameters": {
+        "jsCode": "const output = $json.output || \"\";\n\n// Match **SessionId:** [value]\nconst sessionIdMatch = output.match(/\\*\\*SessionId:\\*\\*\\s*\\[?([a-f0-9-]+)\\]?/i);\n\n// Match **LoopCounter:** [value]\nconst loopCounterMatch = output.match(/\\*\\*LoopCounter:\\*\\*\\s*\\[?(\\d+)\\]?/i);\n\n// Match **RawQuery:** [value]\nconst rawQueryMatch = output.match(/\\*\\*RawQuery:\\*\\*\\s*\\[([\\s\\S]*?)\\](?:\\n|$)/i);\n\n// Match **Output:** [everything after this line]\nconst outputMatch = output.match(/\\*\\*Output:\\*\\*\\s*([\\s\\S]*)/i);\n\nreturn {\n  json: {\n    sessionId: sessionIdMatch ? sessionIdMatch[1].trim() : \"\",\n    loopCounter: loopCounterMatch ? parseInt(loopCounterMatch[1].trim()) : 0,\n    rawQuery: rawQueryMatch ? rawQueryMatch[1].trim() : \"\",\n    output: outputMatch ? outputMatch[1].trim() : \"\"\n  }\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1776,
+        32
+      ],
+      "id": "c2774fb8-fc8f-4073-b517-105d3eb5438a",
+      "name": "Code11"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.sessionId }}{{ $json.loopCounter }}{{ $json.output }}{{ $json.rawQuery }}",
+        "options": {
+          "systemMessage": "=You are a professional human evaluator and rewriting assistant. Your goal is to produce copy or story content that feels completely human-written — emotionally authentic, naturally paced, and based on real examples.\n\nYou will receive:\n- sessionId ({{ $json.sessionId }})\n- loopCounter ({{ $json.loopCounter }})\n- output: AI-generated writing to improve ({{ $json.output }})\n- rawQuery: the user’s original instruction ({{ $json.rawQuery }})\n\n---\n\n🔍 STEP 1: Real Human Style Reference  \nCall `check.RAG_search` with the *entire `output`* as the search query.  \nRetrieve **3–5 real human examples** from social media or content platforms.  \nUse them as **style guides**, focusing on:\n- Emotional tone and voice\n- Short sentences and line breaks\n- Use of bold, emojis, or hashtags\n- Real storytelling flow or persuasive copy structure\n\nDo **NOT copy content**. Only use it to calibrate tone and structure.\n\n---\n\n📌 STEP 2: Evaluation\n\n1. **Detect Type**  \n   Identify if it’s a story or copywriting post.\n\n2. **Check Word Count**\n   If `rawQuery` mentions a word count (e.g., “100 words” or “under 300”), follow it **exactly**.\n   Use `output.split(/\\s+/).length` to count words.\n   If no count is found, aim for **170–200 words**.\n\n3. **Match User Intent**\n   Look at the `rawQuery` for:\n   - Topic, CTA, or structure\n   - Emotional goal or tone\n   - Any *forbidden phrases or preferences* (e.g., “no emojis”)\n\n4. **Rate Human-likeness (1–10)**\n   Based on:\n   - Sentence variety (burstiness)\n   - Natural rhythm and line breaks\n   - Realistic emotion and structure\n   - Matching the best RAG examples\n\n5. **List Mistakes**\n   Bullet points — concise and focused\n   Include:\n   - Flat or robotic tone\n   - Overpolished or vague phrases\n   - Long paragraphs or no visual breathing space\n   - Banned words: *robust, game-changer, leverage, cutting-edge, indeed, notwithstanding, etc.*\n   - Em dashes (—) — must be replaced with simple punctuation or breaks\n\n6. **Write Suggestions**\n   Bullet points for improvements — focused and useful\n\n7. **Rewrite the Output**\n   Use RAG_search tone and structure.\n   Match word count exactly.\n   Use human patterns:\n   - Line breaks where humans pause\n   - Sentence variety: mix short, medium, long\n   - Short paragraphs\n   - 3–5 well-targeted hashtags\n   - CTA that feels personal or specific\n\n---\n\n🧠 Rules for Copywriting\n- Format: **Hook → Problem → Solution → CTA**\n- Use bold sparingly for punchlines\n- Avoid emoji spam (1–3 max, well-placed)\n- Keep it sharp, emotional, and persuasive\n\n📖 Rules for Story\n- Format: Hook → Conflict → Climax → Resolution\n- No headers or titles\n- Use paragraph breaks and pacing like real humans\n\n---\n\n📚 Memory\nCarry forward improvements from previous loops in same session. Do not repeat past mistakes.\n\n---\n\n🛑 Output ONLY in this format:\n\n**Session ID:** {{ $json.sessionId }}  \n**Loop Counter:** {{ $json.loopCounter }}  \n**RawQuery:** [{{ $json.rawQuery }}]  \n**Evaluation Score:** X/10  \n**Mistakes Found:**  \n* [bullet points]\n\n**Suggestions:**  \n* [bullet points]\n\n**Corrected Output:**  \n<your rewritten, real-feeling, punchy, well-structured post, matching exact word count and query goals>  \n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        -1376,
+        32
+      ],
+      "id": "7fbd9685-3f4a-4dd7-8458-50d1bffbe658",
+      "name": "evaluator"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Code9",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "content_creater1": {
+      "main": [
+        [
+          {
+            "node": "Code11",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "prompt_engineer1": {
+      "main": [
+        [
+          {
+            "node": "Code10",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code6": {
+      "main": [
+        [
+          {
+            "node": "Send a message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Google Gemini": {
+      "ai_embedding": [
+        [
+          {
+            "node": "RAG_Search",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model4": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "evaluator",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RAG_Search": {
+      "ai_tool": [
+        [
+          {
+            "node": "evaluator",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code7": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Code6",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code8",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code8": {
+      "main": [
+        [
+          {
+            "node": "Code9",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code9": {
+      "main": [
+        [
+          {
+            "node": "prompt_engineer1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "prompt_engineer1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model5": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "content_creater1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory3": {
+      "ai_memory": [
+        [
+          {
+            "node": "prompt_engineer1",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory4": {
+      "ai_memory": [
+        [
+          {
+            "node": "evaluator",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory5": {
+      "ai_memory": [
+        [
+          {
+            "node": "content_creater1",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code10": {
+      "main": [
+        [
+          {
+            "node": "content_creater1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code11": {
+      "main": [
+        [
+          {
+            "node": "evaluator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "evaluator": {
+      "main": [
+        [
+          {
+            "node": "Code7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "5c7c5e95-f584-447d-a856-a20913aa5491",
+  "meta": {
+    "instanceId": "25b702fb9cea43b04179dd2725a17c5ad9641ca75f06c692c58403681a5c44bb"
+  },
+  "id": "tj0QsKA5jfV4Zrl9",
+  "tags": []
+}
